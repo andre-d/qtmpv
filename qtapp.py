@@ -59,7 +59,9 @@ class MainWindow(QMainWindow):
         self.videocontainer.vwidth = width
         self.videocontainer.vheight = height
         self.show()
-        self.resize(self.sizeHint())
+        if not self.sized_once and width:
+            self.resize(self.sizeHint())
+            self.sized_once = True
 
     def createPlaylistDock(self):
         self.playlist = PlayList(self.mpv)
@@ -78,6 +80,7 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
         mpv.reconfig.connect(self.reconfig)
         mpv.novid.connect(self.novid)
+        self.sized_once = False
         mpv.hasvid.connect(self.hasvid)
         mpv.fullscreen.connect(self.fullscreen)
         self.mpv = mpv

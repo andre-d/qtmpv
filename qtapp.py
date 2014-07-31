@@ -72,8 +72,10 @@ class MainWindow(QMainWindow):
 
     def fullscreen(self, fullscreen):
         if fullscreen:
+            self.playlistdock.hide()
             self.showFullScreen()
         elif self.isFullScreen():
+            self.playlistdock.show()
             self.showNormal()
 
     def __init__(self, mpv):

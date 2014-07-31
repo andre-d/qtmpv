@@ -8,6 +8,8 @@ from PyQt5.Qt import *
 
 class VideoContainer(QWidget):
     def sizeHint(self):
+        if not self.vwidth:
+            return QWidget.sizeHint(self)
         return QSize(self.vwidth, self.vheight)
 
     def __init__(self, parent):
@@ -57,6 +59,7 @@ class MainWindow(QMainWindow):
         self.videocontainer.vwidth = width
         self.videocontainer.vheight = height
         self.show()
+        self.resize(self.sizeHint())
 
     def createPlaylistDock(self):
         self.playlist = PlayList(self.mpv)
@@ -65,11 +68,18 @@ class MainWindow(QMainWindow):
         self.playlistdock.setFeatures(QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetMovable)
         self.playlistdock.setWidget(self.playlist)
 
+    def fullscreen(self, fullscreen):
+        if fullscreen:
+            self.showFullScreen()
+        elif self.isFullScreen():
+            self.showNormal()
+
     def __init__(self, mpv):
         QMainWindow.__init__(self)
         mpv.reconfig.connect(self.reconfig)
         mpv.novid.connect(self.novid)
         mpv.hasvid.connect(self.hasvid)
+        mpv.fullscreen.connect(self.fullscreen)
         self.mpv = mpv
         self.videocontainer = VideoContainer(self)
         self.setCentralWidget(self.videocontainer)
@@ -121,6 +131,7 @@ class MPV(QObject):
         
         self.m.observe_property('playlist')
         self.m.observe_property('playlist-pos')
+        self.m.observe_property('fullscreen')
         
         for media in media:
             self.m.command('loadfile', media, 'append')
@@ -162,11 +173,14 @@ class MPV(QObject):
                 elif event.data.name == 'playlist-pos':
                     self.playlist_pos = event.data.data
                     self.playlistchanged.emit()
+                elif event.data.name == 'fullscreen':
+                    self.fullscreen.emit(event.data.data)
 
     novid = pyqtSignal()
     hasvid = pyqtSignal()
     playlistchanged = pyqtSignal()
     reconfig = pyqtSignal(int, int)
+    fullscreen = pyqtSignal(bool)
     wakeup = pyqtSignal()
 
     def mpv_wakeup(self):

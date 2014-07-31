@@ -179,7 +179,7 @@ class MPV(QObject):
                     self.playlist_pos = event.data.data
                     self.playlistchanged.emit()
                 elif event.data.name == 'fullscreen':
-                    self.fullscreen.emit(event.data.data)
+                    self.fullscreen.emit(event.data.data or False)
 
     novid = pyqtSignal()
     hasvid = pyqtSignal()

@@ -119,7 +119,9 @@ class MPV(QObject):
         
         for media in media:
             self.m.command('loadfile', media, 'append')
-        self.m.set_property('playlist-pos', 0)
+        
+        if media:
+            self.m.set_property('playlist-pos', 0)
         
         self.m.set_wakeup_callback(self.mpv_wakeup)
 

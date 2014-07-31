@@ -91,9 +91,14 @@ class MPV(QObject):
 
     @property
     def media_title(self):
-        return self.m.get_property('media-title')
+        try:
+            return self.m.get_property('media-title')
+        except mpv.MPVError:
+            return None
 
     def init(self, args, wid):
+        self.playlist = []
+        self.playlist_pos = None
         self.wakeup.connect(self.handle_event)
         
         options, media = self.get_options(args)
@@ -141,14 +146,15 @@ class MPV(QObject):
                 self.hasvid.emit()
             elif event.id == mpv.Events.log_message:
                 print(event.data.text, end='')
-            elif event.id == mpv.Events.video_reconfig:
+            elif (event.id == mpv.Events.end_file
+             or event.id == mpv.Events.video_reconfig):
                 try:
                     self.reconfig.emit(
                         self.m.get_property('dwidth'),
                         self.m.get_property('dheight')
                     )
                 except mpv.MPVError:
-                    pass
+                    self.reconfig.emit(None, None)
             elif event.id == mpv.Events.property_change:
                 if event.data.name == 'playlist':
                     self.playlist = event.data.data

@@ -196,6 +196,7 @@ class App(QApplication):
         # See you on the other side
         QTimer.singleShot(0, self.init)
         self.exec_()
+        self.mpv.m.set_wakeup_callback(None)
 
     def init(self):
         self.mpv = MPV()
